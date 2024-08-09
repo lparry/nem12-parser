@@ -31,18 +31,25 @@ module NEM12
     free_kwh = intervals.sum(&:free_kwh)
     controlled_load_kwh = intervals.sum(&:controlled_load_kwh)
     days = intervals.count { _1.ctrl_load }
-    sprintf(
-      "Total cost: $%.2f\nDaily cost: $%.2f\nDays: %i\nDaily kWh: %.3f\nDaily Peak kWh: %.3f\nDaily Offpeak kWh: %.3f\nDaily Free kWh: %.3f\nDaily Controlled load kWh: %.3f",
-      total_cost,
-      total_cost / days,
-      days,
-      total_kwh / days,
-      peak_kwh / days,
-      offpeak_kwh / days,
-      free_kwh / days,
-      controlled_load_kwh / days,
-    ).then { puts _1 }
+    width = 16
+    report = <<~REPORT.sub(/\n\n/, "\n")
+       Total cost: #{money(total_cost)}
+       Days: #{days}
+       ----------------
+       Daily Stats:
+       #{"Supply Cost:".ljust(width)} #{money(rates.daily_supply_charge_in_cents / 100)}
+       #{"Peak:".ljust(width)} #{kwh(peak_kwh / days)} (#{money(peak_kwh / days * rates.peak_in_cents / 100)})
+       #{"Offpeak:".ljust(width)} #{kwh(offpeak_kwh / days)} (#{money(offpeak_kwh / days * rates.offpeak_in_cents / 100)})
+       #{"#{"Free:".ljust(width)} #{kwh(free_kwh / days)} (#{money(0)})" if rates.has_free_period}
+       #{"Controlled load:".ljust(width)} #{kwh(controlled_load_kwh / days)} (#{money(free_kwh / days * rates.controlled_load_in_cents / 100)})
+       #{"Total:".ljust(width)} #{kwh(total_kwh / days)} (#{money(total_cost / days)})
+    REPORT
+
+    puts report
   end
+
+  def money(amount) = sprintf("$%.2f", amount)
+  def kwh(amount) = sprintf("%.3f kWh", amount)
 
   sig { params(filename: String, rates: Rates).returns(T::Array[IntervalData]) }
   def parse(filename:, rates:)
