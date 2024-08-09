@@ -10,3 +10,16 @@ need to process their versions of an NEM12 file, but it also might not.
 Currently I'm only offered TOU plans, one with free time and the other without.
 There's minimal flexibility there, but if TOU periods were to not end on hours,
 or were to be different on weekends, you're out of luck.
+
+## Usage
+
+Detailed report should be saved as `details.csv`, then
+
+```bash
+bin/compare
+```
+
+To get a REPL:
+```bash
+bin/console
+```
